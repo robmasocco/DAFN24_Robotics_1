@@ -11,7 +11,7 @@
 	\begin{columns}
 		\column{.5\textwidth}
 		\only<1>{
-			\nolistindent ROS 2 is a \textbg{DDS-based}, \textbg{open-source} middleware for robotic applications.\\
+			\nolistindent ROS 2 is a \textbg{DDS-based} (for now!), \textbg{open-source} middleware for robotic applications and software development.\\
 			It allows developers to build and manage \textbg{distributed control architectures} made of many modules, usually referred to as \textbg{nodes}.
 		}
 		\only<2>{
@@ -58,7 +58,7 @@
 \begin{frame}{Main features}
 	As a middleware, it offers many \textbg{services to roboticists}, including:
 	\begin{itemize}
-		\item \textbg{three communication paradigms}, easy to set up and based on the DDS: \textbg{messages}, \textbg{services} and \textbg{actions};
+		\item \textbg{three communication paradigms}, easy to set up and based on the DDS (for now!): \textbg{messages}, \textbg{services} and \textbg{actions};
 		\item organization of software packages, allowing for \textbg{redistribution and code reuse}, thanks to the \textbg{\texttt{colcon}} package manager;
 		\item module configuration tools: \textbg{node parameters} and \textbg{launch files};
 		\item integrated \textbg{logging subsystem} (involves both console and log files);
@@ -77,11 +77,27 @@
 	\end{figure}
 \end{frame}
 
+% --- The power of open source ---
+\begin{frame}{The power of open source}
+  The ROS project aims at establishing a common ground for the \textbg{development} of robotics just like what happened in the \textbg{software industry} in the last 30 years.\\
+  \bigskip
+  By \textbg{reusing code} and implementing \textbg{open hardware}, \textbg{building} a functioning robot may be only a matter of installing software, then writing four kinds of \textbg{text files}:
+  \begin{itemize}
+    \item \textbg{system files}, for onboard computers;
+    \item \textbg{launch files}, to configure software startup and operation;
+    \item \textbg{parameter files}, to set configuration parameters for software modules;
+    \item \textbg{robot description files}, to tell the software how the robot is built;
+  \end{itemize}
+  even without a single line of code!\\
+  \bigskip
+  Open source enables quick \textbg{diffusion} and \textbg{improvement}, even on the \textbg{security} side, although new threats are rising: see the recent \href{https://en.wikipedia.org/wiki/XZ_Utils_backdoor}{\color{blue}\underline{\texttt{xz} backdoor}} case.
+\end{frame}
+
 % --- Application Programming Interface ---
 \begin{frame}{Application Programming Interface}{Deep dive into ROS 2 internals}
 	A \textbg{ROS 2 installation}, from bottom to top, works as follows:
 	\begin{enumerate}
-		\item \textbg{DDS}: the middleware that implements the \textbg{communication layer} (many different implementations are supported).
+		\item \textbg{DDS}: the middleware that implements the \textbg{communication layer} (many different implementations are supported) (for now!).
 		\item \textbg{RMW}: ROS MiddleWare, is the \textbg{DDS abstraction layer}, which allows to use different DDS implementations without changing the application code.
 		\item \textbg{rcl}: ROS Client Support Library (C), implements basic entities: \textbg{nodes}, \textbg{publishers}, \textbg{subscribers}, \textbg{services}, \textbg{clients}, and \textbg{timers}.
 		\item \textbg{rclc}/\textbg{rclcpp}/\textbg{rclpy}: ROS Client Library (C/C++/Python), implements the same entities as \texttt{rcl}, plus extended functionalities like the \textbg{executor}: a job scheduler.
@@ -94,7 +110,7 @@
 	A node must usually do \textbg{a single thing}, being the \textbg{unit} in a \textbg{distributed architecture}.\\
 	With its class methods, it can:
 	\begin{itemize}
-		\item act as an \textbg{entry point} towards the DDS layer, to handle communications;
+		\item act as an \textbg{entry point} towards the RMW layer, to handle communications;
 		\item embed \textbg{software modules} like data, algorithms, and threads, that implement the application logic;
 		\item register \textbg{callbacks} to handle \textbg{events}, such as timers or incoming messages.
 	\end{itemize}
@@ -102,7 +118,7 @@
 	Nodes are usually handled by \textbg{executors}, which are responsible for scheduling and processing their \textbg{ROS-workload}.
 	\begin{block}{}
 		\centering
-		\textbf{Nodes are just objects in your application: they can embed any kind of software module, but they do not limit the design to their paradigms.}
+		\textbf{Nodes are just objects in your application: they can embed any kind of software module, but they do not limit your design to their paradigms.}
 	\end{block}
 \end{frame}
 
@@ -129,12 +145,12 @@
 \end{frame}
 
 % --- Flaws ---
-\begin{frame}{Flaws}
+\begin{frame}{Flaws}{The devil is in the details}
 	\visible<1->{
-		\begin{alertblock}{ROS 2 biggest flaws (as of today)}
+		\begin{alertblock}{ROS 2 main design flaws as of today}
 			The main concerns arise when developing low-level stuff:
 			\begin{itemize}
-				\item \textbr{the DDS layer is almost completely abstracted}, so non-standard network configurations may get tricky;
+				\item \textbr{the DDS layer is almost completely abstracted}, so non-standard network or DDS configurations may get tricky;
 				\item the internal job scheduling algorithm (namely the \textbr{executor}) is \textbr{not suited for hard real-time applications} because of its \textbr{non-preemptive} nature.
 			\end{itemize}
 		\end{alertblock}
@@ -146,4 +162,50 @@
 			\item Use \textbg{micro-ROS}: hard real-time ROS 2 on microcontrollers and different communication interfaces.
 		\end{itemize}
 	}
+\end{frame}
+\begin{frame}{Flaws}{The DDS layer abstraction}
+	ROS 2 nodes can either \textbg{publish to} or \textbg{subscribe to} a \textbg{topic}.
+	\begin{block}{Definition of ROS 2 topic}
+		A ROS 2 topic is \textbf{uniquely identified} by three attributes:
+		\begin{itemize}
+			\item a \textbf{name}, \emph{i.e.}, a human-readable character string;
+			\item an \textbf{interface}, \emph{i.e.}, a custom packet format that specifies what data is carried over it (\emph{e.g.}, strings, numbers, arrays...);
+			\item a \textbf{single QoS policy} that specifies how transmissions should be performed.
+		\end{itemize}
+	\end{block}
+	\begin{block}{}
+		\centering
+		\textbf{Changing even only one of the above results in a completely different topic!}
+	\end{block}
+  Compare this to the DDS way of setting up a communication channel between two applications...
+\end{frame}
+\begin{frame}{Flaws}{The DDS in a multi-agent environment}
+  Over the years, ROS 2 helped identify some \textbg{flaws} in the \textbg{DDS standard}:
+  \begin{itemize}
+    \item communication with \textbg{large data} (\emph{e.g.}, images, pointclouds...) over a \textbg{lossy network} becomes inefficient or impossible, due to \textbg{retransmission policies};
+    \item \textbg{discovery} of \textbg{many endpoints}, especially over a \textbg{lossy network}, may become slow or \textbg{clog} the network completely, due to the amount of generated \textbg{traffic}.
+  \end{itemize}
+  Just think about a \textbg{swarm} of drones, each one cameras and the like, trying to communicate over a \textbg{wireless network}...
+\end{frame}
+\begin{frame}{Flaws}{Abandoning the DDS?}
+  \begin{columns}
+    \column{.5\textwidth}
+    ROS 2 steering committees are considering the \textbg{abandonment} of the DDS middleware in favor of \textbg{new solutions}. The main requirements are:
+    \begin{itemize}
+      \item \textbg{scalability}, especially with entity queries;
+      \item \textbg{low latency}, on constrained hardware and low-power networks;
+      \item \textbg{configurability};
+      \item \textbg{optimization of data transfers}.
+    \end{itemize}
+    \bigskip
+    The new LTS version, \textbg{Jazzy Jalisco}, will be the first one to ship with the \href{https://zenoh.io/}{\color{blue}\textbf{\underline{Zenoh}}} middleware.
+
+    \column{.5\textwidth}
+    \begin{figure}
+      \centering
+      \includegraphics[width=.65\textwidth]{zenoh}
+      \label{fig:zenoh}
+      \caption{Zenoh logo.}
+    \end{figure}
+  \end{columns}
 \end{frame}
