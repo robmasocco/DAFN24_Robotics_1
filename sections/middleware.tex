@@ -42,40 +42,64 @@
 
 % --- Data Distribution Service ---
 \begin{frame}{Data Distribution Service}
-	\begin{block}{Definition of DDS}
-		A DDS is a \textbf{publish-subscribe middleware} that handles communications between \textbf{real-time} systems and software over the network.
+  \begin{block}{Definition of DDS}
+    The DDS is a \textbf{data-centric communication protocol} used for \textbf{distributed} software application communications, describing APIs and communication semantics between data \textbf{providers} and \textbf{consumers}.
+  \end{block}
+	\begin{block}{Definition of DDS implementation}
+		A DDS implementation is a \textbf{publish-subscribe middleware} that handles communications between \textbf{real-time} systems and software over the \textbf{network}.
 	\end{block}
-	DDSs are currently used in automotive, aerospace, military...\\
-	Their implementations follow an \textbg{open standard} that defines:
-	\begin{itemize}
-		\item \textbg{serialization} and \textbg{deserialization} of data packets (\texttt{RTPS Wire Protocol});
-		\item \textbg{security protocols} and cryptographic operations;
-		\item enforcing of \textbg{Quality of Service} policies to organize transmissions (specifying things like \textbg{queue sizes}, \textbg{best-effort} or \textbg{reliable} transmissions...);
-	\end{itemize}
+  It is defined by an \href{https://www.omg.org/spec/DDS/About-DDS/}{\color{blue}{\underline{\textbf{{open standard}}}}} maintained by the \textbg{Object Management Group}.
 \end{frame}
 \begin{frame}{Data Distribution Service}
+	DDSs are currently used in automotive, aerospace, military, robotics...\\
+  \bigskip
+	The open standard defines:
 	\begin{itemize}
-		\item automatic discovery of \textbg{DDS participants} (over \textbg{multicast-IP/UDP}) and transmission of data (over \textbg{unicast-IP/UDP}) (\texttt{Discovery Protocol}).
+		\item \textbg{serialization} and \textbg{deserialization} of data packets over supported mediums;
+		\item \textbg{security protocols} and cryptographic operations;
+		\item enforcing of \textbg{Quality of Service} policies to organize transmissions (specifying things like \textbg{queue sizes}, \textbg{best-effort} or \textbg{reliable} transmissions...);
+		\item automatic discovery of \textbg{DDS participants} (\texttt{Discovery Protocol} over \textbg{multicast-IP/UDP}) and transmission of data (over \textbg{unicast-IP/UDP}).
 	\end{itemize}
+  \bigskip
+  Any vendor may add their own extensions to their implementations.
+\end{frame}
+\begin{frame}{Data Distribution Service}
+An application using the DDS can create one or more \textbg{participants}.\\
+They represent the access point to the DDS network, and embed a \textbg{QoS policy} specifying:
+\begin{itemize}
+  \item the \textbg{domain} they belong to (numerical ID);
+  \item the \textbg{network interfaces}, \textbg{protocols}, and \textbg{settings} to use.
+\end{itemize}
+\bigskip
+Participants can create \textbg{entities}:
+\begin{itemize}
+  \item \textbg{Publishers}, as publication entities, embedding \textbg{DataWriters};
+  \item \textbg{Subscribers}, as subscription entities, embedding \textbg{DataReaders};
+  \item \textbg{Topics}, as configuration entities.
+\end{itemize}
+Each may enforce a \textbg{QoS policy} specifying its \textbg{desired behavior}.
+\begin{block}{}
+  \centering
+  \textbf{Communication happens when entities with compatible policies match.}
+\end{block}
+\end{frame}
+\begin{frame}{Data Distribution Service}
 	\begin{figure}
 		\centering
-		\includegraphics[scale=.32]{ddsDomain.jpg}
+		\includegraphics[width=.85\textwidth]{dds_domain}
 		\caption{Scheme of a DDS-based network (data space).}
 		\label{fig:ddsdomain}
 	\end{figure}
 \end{frame}
-\begin{frame}{Data Distribution Service}
-	DDS participants can either \textbg{publish to} or \textbg{subscribe to} a \textbg{topic}.
-	\begin{block}{Definition of DDS topic}
-		A DDS topic is \textbf{uniquely identified} by three attributes:
-		\begin{itemize}
-			\item a \textbf{name}, \emph{i.e.}, a human-readable character string;
-			\item an \textbf{interface}, \emph{i.e.}, a custom packet format that specifies what data is carried over it (\emph{e.g.}, strings, numbers, arrays...);
-			\item a \textbf{QoS policy} that specifies how transmissions should be performed.
-		\end{itemize}
-	\end{block}
-	\begin{block}{}
-		\centering
-		\textbf{Changing even only one of the above results in a completely different topic!}
-	\end{block}
+\begin{frame}{Data Distribution Service}{Peeking into the low level}
+  Communications are implemented below the DDS layer, by the \textbg{Real-Time Publish Subscribe (RTPS)} protocol.\\
+  It defines:
+  \begin{itemize}
+    \item a \textbg{Discovery Protocol} to automatically find participants over a network in a same domain;
+    \item a \textbg{Wire Protocol} to serialize and deserialize data packets;
+    \item supported mediums and network protocols;
+    \item data exchange semantics: publishing \textbg{changes} of a \textbg{history}.
+  \end{itemize}
+  \bigskip
+  All the entities appear to the application programmer as \textbg{objects} in the code.
 \end{frame}
